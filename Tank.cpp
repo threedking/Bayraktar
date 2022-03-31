@@ -51,7 +51,7 @@ void Tank::Draw(){
 
 void Tank::SetDrawFunction(void (*DrawFunction)(int, int, bool)){
   if(!DrawFunction){
-    Serial.println("DrawFunction invalid");
+    Serial.println("Tank DrawFunction invalid");
     return;
   }
   Tank::StoredDrawFunction = DrawFunction;

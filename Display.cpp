@@ -62,9 +62,9 @@ bool Display16x8::Tick(unsigned long now){
 bool Display16x8::IsTickTime(unsigned long now){
   return this->time_unit_.IsTickTime(now);
 }
-int Display16x8::GetWidth(){
+int Display16x8::GetWidth() const{
   return this->width_;
 }
-int Display16x8::GetHeigth(){
+int Display16x8::GetHeigth() const{
   return this->heigth_;
 }

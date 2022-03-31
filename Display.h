@@ -30,8 +30,8 @@ class Display16x8{
     void SetFPS(uint8_t new_fps);
     bool Tick(unsigned long now);
     bool IsTickTime(unsigned long now);
-    int GetWidth();
-    int GetHeigth();
+    int GetWidth() const;
+    int GetHeigth() const;
 };
 
 #endif
