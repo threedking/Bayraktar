@@ -43,6 +43,7 @@ public:
 
   void Tick(unsigned long now, bool need_draw);
   void SetAimDirection(AxisDirection new_axis_x, AxisDirection new_axis_y);
+  bool HasCollisionWithBox3x3(int checking_x, int checking_y);
   void Draw();
   int GetX() const;
   int GetY() const;

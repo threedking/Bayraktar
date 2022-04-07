@@ -96,3 +96,18 @@ void Aim::Draw(){
     }
   }
 }
+
+bool Aim::HasCollisionWithBox3x3(int checking_x, int checking_y){
+  int my_x_min, my_x_max, my_y_min, my_y_max;
+  my_x_min = this->GetX();
+  my_x_max = this->GetX() + 3;
+  my_y_min = this->GetY();
+  my_y_max = this->GetY() + 3;
+
+  return 
+    ( checking_x - 1  <= my_x_max && checking_x - 1 >= my_x_min ||
+    checking_x + 1 <= my_x_max && checking_x + 1 >= my_x_min )
+    &&    
+    ( checking_y - 1 <= my_y_max && checking_y - 1 >= my_y_max ||
+    checking_y + 1 <= my_y_max && checking_y + 1 >= my_y_max );
+}
