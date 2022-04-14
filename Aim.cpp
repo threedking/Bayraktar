@@ -6,6 +6,7 @@ Aim::Aim():x_(x_max_ / 2), y_(y_max_ / 2){
 
 void Aim::Tick(unsigned long now, bool need_draw){
   static bool drawed{false};
+  
   if(this->time_unit_.IsTickTime(now)){ 
     this->speed_x_ = this->axis_x_ == AxisDirection::zero ? 0 : this->speed_x_ +
       (this->speed_x_ > -1.0f + 1E-5 && this->speed_x_ < 1.0f - 1E-5 ? 1.0f : this->speed_modifier_)
@@ -23,12 +24,15 @@ void Aim::Tick(unsigned long now, bool need_draw){
     
     return;
   }
+  
+  this->CheckReloading();
+  
   if(need_draw){
     if(!drawed){
       this->Draw();
     }
     drawed =! drawed;
-  } 
+  }
 }
 
 void Aim::ClampSpeed(){
@@ -92,7 +96,7 @@ void Aim::Draw(){
   }
   for(int i = 0; i < Aim::sprite_imax_; i++){
     for(int j = 0; j < Aim::sprite_jmax_; j++){
-      this->StoredDrawFunction(this->GetX() + j, this->GetY() + i, this->sprite_[i][j]);
+      this->StoredDrawFunction(this->GetX() + j, this->GetY() + i, this->sprite_[this->is_reloading_ ? 1 : 0][i][j]);
     }
   }
 }
@@ -103,11 +107,36 @@ bool Aim::HasCollisionWithBox3x3(int checking_x, int checking_y){
   my_x_max = this->GetX() + 3;
   my_y_min = this->GetY();
   my_y_max = this->GetY() + 3;
-
+  
   return 
     ( checking_x - 1  <= my_x_max && checking_x - 1 >= my_x_min ||
     checking_x + 1 <= my_x_max && checking_x + 1 >= my_x_min )
     &&    
-    ( checking_y - 1 <= my_y_max && checking_y - 1 >= my_y_max ||
-    checking_y + 1 <= my_y_max && checking_y + 1 >= my_y_max );
+    ( checking_y - 1 <= my_y_max && checking_y - 1 >= my_y_min ||
+    checking_y + 1 <= my_y_max && checking_y + 1 >= my_y_min );
+}
+
+void Aim::CheckReloading(){
+  if(this->is_reloading_ && this->last_shoot_time_ + this->reload_time_ <= millis()){
+    this->is_reloading_ = false;
+  }
+}
+
+bool Aim::TryShoot(){
+  this->CheckReloading();
+  if(this->is_reloading_){
+    return false;
+  }
+  this->last_shoot_time_ = millis();
+  this->is_reloading_ = true;
+  return true;
+}
+
+void Aim::SetReloadTime(unsigned long new_reload_time){
+  this->reload_time_ = new_reload_time;
+}
+
+void Aim::GoToCenter(){
+  this->x_ = Aim::x_max_ / 2;
+  this->y_ = Aim::y_max_ / 2;
 }
