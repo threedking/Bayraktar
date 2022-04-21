@@ -6,8 +6,10 @@
 GameBoy gb;
 Display16x8* gb_display;
 
-const int tanks_amount{8};
+const int tanks_amount{6};
 Tank* tanks[tanks_amount]{};
+
+SpawnController spawn_controller;
 
 Aim* aim{};
 
@@ -17,20 +19,27 @@ int level{};
 void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(A0));
-  
+    
   gb_display = new Display16x8(&gb);
+
+  spawn_controller.AddLine(0);
+  spawn_controller.AddLine(5);
 
   Tank::SetDrawFunction(&DrawPixelOnDisplay16x8);
   bool x_left{true};
-  int y_start{-3};
+  int new_y{};
   for(auto &tank : tanks){
-    tank = new Tank( x_left ? 0 : 5, y_start);
+    tank = new Tank( x_left ? 0 : 5, 20);
+    if(spawn_controller.TrySpawn(tank->GetRealX(), new_y)){
+      tank->Spawn(tank->GetRealX(), new_y );
+    }    
     x_left = !x_left;
-    y_start -= x_left ? 5 : 0;
   }
 
   Aim::SetDrawFunction(&DrawPixelOnDisplay16x8);
   aim = new Aim();
+
+  SetLevelToAll();
 }
 
 void loop() {
@@ -42,21 +51,36 @@ void loop() {
     Win();
     Restart();
   }  
-  if(Tank::GetWinCount() >= 10){
+  if(Tank::GetWinCount() >= 100){
     gb.testMatrix(10);
     Restart();
   }
 
   ApplyButtons();
 
-  int new_level = constrain(map( (millis() - game_start) / 750, 0, 10, 0, 4), 0, 4);
+  int new_level = constrain( (millis() - game_start) / 2000, 0, 4);
   if(new_level > level){
     level = new_level;
-    SetLevelToTanksAndAim();
+    SetLevelToAll();
   }  
+  
   for(auto &tank : tanks){
-    tank->Tick(now, drawed);
+    bool ticked = tank->Tick(now, drawed);
+
+    if(ticked){
+      spawn_controller.SetNeedMoveLine(tank->GetRealX());
+    }
+    
+    if(tank->IsReadyToSpawn()){
+      int new_y{};
+      if(spawn_controller.TrySpawn(tank->GetRealX(), new_y)){
+        tank->Spawn(tank->GetRealX(), new_y );
+      }
+    }
   }
+
+  
+  spawn_controller.Tick();
   
   aim->Tick(now, drawed);
 
@@ -129,17 +153,19 @@ void Restart(){
   }
 
   level = 0;
-  SetLevelToTanksAndAim();
+  SetLevelToAll();
 
   aim->GoToCenter();
 
   game_start = millis();
 }
 
-void SetLevelToTanksAndAim(){
+void SetLevelToAll(){
   for(auto &tank : tanks){
-    tank->SetDelayTime( (5 - level) * 100 );
+    tank->SetDelayTime( (4 - level) * 50  + (5 - level) * 75);
   }
 
   aim->SetReloadTime( pow((5 - level), 2) * 50 );
+
+  spawn_controller.SetLevel(level);
 }

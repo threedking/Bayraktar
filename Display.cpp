@@ -3,7 +3,7 @@
 
 Display16x8::Display16x8(GameBoy* new_GB):GB_(new_GB){
   if(this->GB_){
-    this->GB_->begin(10);  
+    this->GB_->begin(5);  
     this->Clear();
   }else{
     Serial.println("Display16x8.GB* bad");
