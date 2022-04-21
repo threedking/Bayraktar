@@ -13,7 +13,9 @@ bool Tank::Tick(unsigned long now, bool need_draw) {
     this->y_++;
     if (this->y_ >= Tank::y_max_) {
       if (!this->ready_to_spawn_) {
-        Tank::win_count_++;
+        if(this->alive_){
+          Tank::win_count_++;
+        }
         this->ready_to_spawn_ = true;
       }
       this->alive_ = false;
@@ -53,6 +55,7 @@ void Tank::Spawn(int new_x, int new_y) {
   this->bang_frame_ = 0;
   this->time_unit_tick_.ForceTick(millis());
   this->time_unit_bang_.ForceTick(millis());
+  Tank::spawned_count_++;
 }
 
 void Tank::Draw(void (*DrawFunction)(int, int, bool)) {
@@ -96,7 +99,15 @@ int Tank::GetDestroyedCount() {
 }
 
 int Tank::GetWinCount() {
-  return  Tank::win_count_;
+  return Tank::win_count_;
+}
+
+bool Tank::IsTanksWin(){
+  return Tank::win_count_ > 0;
+}
+
+bool Tank::IsTanksLose(){
+  return Tank::destroyed_count_ == Tank::spawn_max_;
 }
 
 void Tank::Bang() {
@@ -111,8 +122,12 @@ void Tank::Bang() {
 void Tank::HardReset(int new_x, int new_y) {
   this->time_unit_tick_.SetDelayTime(1000);
   this->Spawn(new_x, new_y);
+}
+
+void Tank::ResetMain(){
   Tank::destroyed_count_ = 0;
   Tank::win_count_ = 0;
+  Tank::spawned_count_ = 0;  
 }
 
 void Tank::SetDelayTime(unsigned long new_delay_time) {
@@ -140,7 +155,7 @@ int Tank::GetRealY() const {
 }
 
 bool Tank::IsReadyToSpawn() const {
-  return this->ready_to_spawn_;
+  return this->ready_to_spawn_ && Tank::spawned_count_ < Tank::spawn_max_;
 }
 
 //-------------------------

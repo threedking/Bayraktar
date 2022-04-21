@@ -29,10 +29,8 @@ void setup() {
   bool x_left{true};
   int new_y{};
   for(auto &tank : tanks){
-    tank = new Tank( x_left ? 0 : 5, 20);
-    if(spawn_controller.TrySpawn(tank->GetRealX(), new_y)){
-      tank->Spawn(tank->GetRealX(), new_y );
-    }    
+    spawn_controller.TrySpawn(x_left ? 0 : 5, new_y);
+    tank = new Tank(x_left ? 0 : 5, new_y);
     x_left = !x_left;
   }
 
@@ -47,13 +45,15 @@ void loop() {
   static bool drawed{false};
   now = millis();
 
-  if(Tank::GetDestroyedCount() >= 50){
+  if(Tank::IsTanksLose()){
     Win();
     Restart();
-  }  
-  if(Tank::GetWinCount() >= 100){
+    return;
+  }
+  if(Tank::IsTanksWin()){
     gb.testMatrix(10);
     Restart();
+    return;
   }
 
   ApplyButtons();
@@ -146,6 +146,7 @@ bool win[16][8]{
 void Restart(){  
   bool x_left{true};
   int y_start{-3};
+  Tank::ResetMain();
   for(auto &tank : tanks){
     tank->HardReset( x_left ? 0 : 5, y_start);
     x_left = !x_left;
@@ -162,7 +163,8 @@ void Restart(){
 
 void SetLevelToAll(){
   for(auto &tank : tanks){
-    tank->SetDelayTime( (4 - level) * 50  + (5 - level) * 75);
+    //tank->SetDelayTime( (4 - level) * 50  + (5 - level) * 75);
+    tank->SetDelayTime( (5 - level) * 50 + 50);
   }
 
   aim->SetReloadTime( pow((5 - level), 2) * 50 );

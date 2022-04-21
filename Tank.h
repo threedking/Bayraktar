@@ -14,9 +14,14 @@ public:
   static void SetDrawFunction(void (*DrawFunction)(int, int, bool));
   static int GetDestroyedCount();
   static int GetWinCount();
+  static bool IsTanksWin();
+  static bool IsTanksLose();
+  static void ResetMain();
 protected:
   inline static int destroyed_count_{};
   inline static int win_count_{};
+  inline static int spawned_count_{};
+  inline static const int spawn_max_{50};
   inline static void(*StoredDrawFunction)(int, int, bool){};
 
   bool sprite_[sprite_imax_][sprite_jmax_]{
